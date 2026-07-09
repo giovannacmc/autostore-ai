@@ -56,22 +56,28 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
     <main className="min-h-screen bg-[#f7faff] text-slate-950">
       <Header />
 
-      <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
-        <div className="mb-6 flex items-center gap-2 text-sm text-slate-500">
+      <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-10">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <Link href="/catalogo" className="transition hover:text-blue-600">
             Catálogo
           </Link>
 
           <span>/</span>
 
-          <span className="font-medium text-slate-800">{carName}</span>
+          <span>{car.brand}</span>
+
+          <span>/</span>
+
+          <span className="font-medium text-slate-800">{car.model}</span>
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
-          <section className="h-fit overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <VehicleImage image={car.image} carName={carName} />
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
+          <section className="h-fit space-y-6">
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <VehicleImage image={car.image} carName={carName} />
+            </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <SpecCard
                 title="Categoria"
                 value={car.category}
@@ -82,7 +88,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               <SpecCard title="Combustível" value={car.fuel} icon="fuel" />
             </div>
 
-            <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
               <h2 className="text-xl font-semibold text-slate-950">
                 Sobre o veículo
               </h2>
@@ -99,8 +105,8 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               </div>
             </section>
 
-            <section className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-3xl border border-slate-200 bg-white p-6">
+            <section className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <h2 className="text-lg font-semibold text-slate-950">
                   Cores disponíveis
                 </h2>
@@ -117,7 +123,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-6">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <h2 className="text-lg font-semibold text-slate-950">
                   Itens principais
                 </h2>
@@ -128,7 +134,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
                       key={item}
                       className="flex gap-3 text-sm leading-5 text-slate-600"
                     >
-                      <span className="mt-1 h-2 w-2 rounded-full bg-blue-600" />
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -137,10 +143,10 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
             </section>
           </section>
 
-          <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-28">
             <p className="text-sm font-semibold text-blue-600">{car.brand}</p>
 
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
               {car.model}
             </h1>
 
@@ -148,7 +154,7 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
               {car.description}
             </p>
 
-            <div className="mt-8">
+            <div className="mt-8 rounded-3xl bg-slate-50 p-5">
               <p className="text-sm text-slate-500">A partir de</p>
 
               <p className="mt-2 text-3xl font-bold text-slate-950">
@@ -170,26 +176,29 @@ export default async function CarDetailPage({ params }: CarDetailPageProps) {
 
 function VehicleImage({ image, carName }: { image: string; carName: string }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="absolute left-6 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm">
+    <div className="relative overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-slate-50 via-blue-50 to-white">
+      <div className="absolute left-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm sm:flex">
         ‹
       </div>
 
-      <div className="absolute right-6 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm">
+      <div className="absolute right-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm sm:flex">
         ›
       </div>
 
       {image ? (
         <div
           aria-label={carName}
-          className="h-[300px] w-full bg-contain bg-center bg-no-repeat"
+          className="h-[240px] w-full bg-contain bg-center bg-no-repeat sm:h-[360px] lg:h-[420px]"
           style={{
             backgroundImage: `url(${image})`,
           }}
         />
       ) : (
-        <div className="flex h-[300px] items-center justify-center px-10">
-          <svg viewBox="0 0 720 300" className="h-full w-full max-w-3xl">
+        <div className="flex h-[240px] items-center justify-center px-4 sm:h-[360px] sm:px-8 lg:h-[420px]">
+          <svg
+            viewBox="0 0 720 300"
+            className="h-auto w-full max-w-3xl drop-shadow-[0_30px_25px_rgba(15,23,42,0.12)]"
+          >
             <ellipse cx="360" cy="250" rx="260" ry="24" fill="#dbeafe" />
 
             <path
@@ -265,8 +274,8 @@ function SpecCard({
   icon: "category" | "year" | "gear" | "fuel";
 }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
         <SpecIcon type={icon} />
       </div>
 

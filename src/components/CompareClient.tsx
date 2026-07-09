@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { Car } from "../types/car";
 
 type CompareClientProps = {
@@ -18,9 +18,9 @@ function formatPrice(price: number) {
 
 export default function CompareClient({ cars }: CompareClientProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([
-    cars[0]?.id ?? "",
-    cars[1]?.id ?? cars[0]?.id ?? "",
-    cars[2]?.id ?? cars[1]?.id ?? cars[0]?.id ?? "",
+    cars[0]?.id || "",
+    cars[1]?.id || "",
+    cars[2]?.id || "",
   ]);
 
   const selectedCars = useMemo(() => {
@@ -30,23 +30,67 @@ export default function CompareClient({ cars }: CompareClientProps) {
   }, [cars, selectedIds]);
 
   function updateSelectedCar(index: number, carId: string) {
-    setSelectedIds((currentIds) =>
-      currentIds.map((currentId, currentIndex) =>
-        currentIndex === index ? carId : currentId,
-      ),
-    );
+    setSelectedIds((currentIds) => {
+      const nextIds = [...currentIds];
+      nextIds[index] = carId;
+      return nextIds;
+    });
   }
+
+  const rows = [
+    {
+      label: "Preço",
+      getValue: (car: Car) => formatPrice(car.price),
+    },
+    {
+      label: "Categoria",
+      getValue: (car: Car) => car.category,
+    },
+    {
+      label: "Ano",
+      getValue: (car: Car) => String(car.year),
+    },
+    {
+      label: "Motor",
+      getValue: (car: Car) => car.engine,
+    },
+    {
+      label: "Potência",
+      getValue: (car: Car) => car.power,
+    },
+    {
+      label: "Câmbio",
+      getValue: (car: Car) => car.transmission,
+    },
+    {
+      label: "Consumo",
+      getValue: (car: Car) => car.consumption,
+    },
+    {
+      label: "Combustível",
+      getValue: (car: Car) => car.fuel,
+    },
+    {
+      label: "Cores",
+      getValue: (car: Car) => car.colors.join(", "),
+    },
+    {
+      label: "Itens principais",
+      getValue: (car: Car) => car.items.slice(0, 3).join(", "),
+    },
+  ];
 
   if (cars.length === 0) {
     return (
       <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
           <h1 className="text-2xl font-semibold text-slate-950">
             Nenhum veículo disponível
           </h1>
 
           <p className="mt-3 text-sm text-slate-600">
-            Cadastre veículos no catálogo para usar a comparação.
+            Quando houver veículos cadastrados, eles aparecerão aqui para
+            comparação.
           </p>
         </div>
       </section>
@@ -54,8 +98,8 @@ export default function CompareClient({ cars }: CompareClientProps) {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-      <div className="mb-8 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+    <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-10">
+      <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <p className="text-sm font-semibold text-blue-600">Comparação</p>
 
@@ -64,27 +108,33 @@ export default function CompareClient({ cars }: CompareClientProps) {
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Escolha até três modelos e veja as principais diferenças antes de
-            decidir qual combina melhor com você.
+            Escolha até três modelos para analisar preço, motor, câmbio,
+            consumo, combustível e itens principais.
           </p>
         </div>
 
         <Link
           href="/catalogo"
-          className="w-fit rounded-xl border border-blue-100 bg-white px-5 py-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50"
+          className="w-fit rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
         >
           Voltar ao catálogo
         </Link>
       </div>
 
-      <div className="mb-6 grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-3">
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
         {[0, 1, 2].map((index) => (
-          <label key={index} className="text-xs font-semibold text-slate-600">
-            Veículo {index + 1}
+          <label
+            key={index}
+            className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Veículo {index + 1}
+            </span>
+
             <select
               value={selectedIds[index]}
               onChange={(event) => updateSelectedCar(index, event.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-blue-400"
+              className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400"
             >
               {cars.map((car) => (
                 <option key={car.id} value={car.id}>
@@ -96,36 +146,68 @@ export default function CompareClient({ cars }: CompareClientProps) {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {selectedCars.map((car, index) => (
-          <CompareCard key={`${car.id}-${index}`} car={car} index={index} />
+      <div className="mb-6 grid gap-5 lg:grid-cols-3">
+        {selectedCars.map((car) => (
+          <article
+            key={car.id}
+            className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+          >
+            <CarVisual
+              image={car.image}
+              carName={`${car.brand} ${car.model}`}
+            />
+
+            <div className="p-5">
+              <p className="text-sm font-semibold text-blue-600">{car.brand}</p>
+
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                {car.model}
+              </h2>
+
+              <p className="mt-2 text-sm text-slate-500">
+                {car.category} • {car.year}
+              </p>
+
+              <p className="mt-5 text-2xl font-bold text-slate-950">
+                {formatPrice(car.price)}
+              </p>
+
+              <div className="mt-5 grid gap-3 text-sm text-slate-600">
+                <InfoLine label="Motor" value={car.engine} />
+                <InfoLine label="Câmbio" value={car.transmission} />
+                <InfoLine label="Consumo" value={car.consumption} />
+              </div>
+
+              <Link
+                href={`/carros/${car.id}`}
+                className="mt-5 block rounded-2xl bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Ver detalhes
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
 
-      <section className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 px-6 py-5">
           <h2 className="text-lg font-semibold text-slate-950">
             Comparativo completo
           </h2>
 
           <p className="mt-1 text-sm text-slate-600">
-            Veja as informações principais dos modelos selecionados.
+            No celular, deslize a tabela para o lado para ver todos os veículos.
           </p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="w-48 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Característica
-                </th>
+          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th className="w-[190px] px-6 py-4">Critério</th>
 
-                {selectedCars.map((car, index) => (
-                  <th
-                    key={`${car.id}-head-${index}`}
-                    className="px-6 py-4 text-sm font-semibold text-slate-950"
-                  >
+                {selectedCars.map((car) => (
+                  <th key={car.id} className="px-6 py-4">
                     {car.brand} {car.model}
                   </th>
                 ))}
@@ -133,57 +215,22 @@ export default function CompareClient({ cars }: CompareClientProps) {
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              <CompareRow
-                label="Preço"
-                values={selectedCars.map((car) => formatPrice(car.price))}
-              />
+              {rows.map((row) => (
+                <tr key={row.label} className="transition hover:bg-slate-50/80">
+                  <td className="px-6 py-5 font-semibold text-slate-900">
+                    {row.label}
+                  </td>
 
-              <CompareRow
-                label="Categoria"
-                values={selectedCars.map((car) => car.category)}
-              />
-
-              <CompareRow
-                label="Ano"
-                values={selectedCars.map((car) => String(car.year))}
-              />
-
-              <CompareRow
-                label="Motor"
-                values={selectedCars.map((car) => car.engine)}
-              />
-
-              <CompareRow
-                label="Potência"
-                values={selectedCars.map((car) => car.power)}
-              />
-
-              <CompareRow
-                label="Câmbio"
-                values={selectedCars.map((car) => car.transmission)}
-              />
-
-              <CompareRow
-                label="Consumo"
-                values={selectedCars.map((car) => car.consumption)}
-              />
-
-              <CompareRow
-                label="Combustível"
-                values={selectedCars.map((car) => car.fuel)}
-              />
-
-              <CompareRow
-                label="Cores"
-                values={selectedCars.map((car) => car.colors.join(", "))}
-              />
-
-              <CompareRow
-                label="Itens principais"
-                values={selectedCars.map((car) =>
-                  car.items.slice(0, 3).join(", "),
-                )}
-              />
+                  {selectedCars.map((car) => (
+                    <td
+                      key={`${row.label}-${car.id}`}
+                      className="px-6 py-5 text-slate-600"
+                    >
+                      {row.getValue(car)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -192,171 +239,88 @@ export default function CompareClient({ cars }: CompareClientProps) {
   );
 }
 
-function CompareCard({ car, index }: { car: Car; index: number }) {
+function InfoLine({ label, value }: { label: string; value: string }) {
   return (
-    <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-      <div className="relative flex min-h-64 items-center justify-center overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50 p-6">
-        <div className="absolute left-5 top-5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">
-          Opção {index + 1}
-        </div>
+    <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
+      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </span>
 
-        <VehicleImage image={car.image} alt={`${car.brand} ${car.model}`} />
-      </div>
-
-      <div className="p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium text-slate-500">{car.brand}</p>
-
-            <h2 className="mt-1 text-2xl font-semibold text-slate-950">
-              {car.model}
-            </h2>
-          </div>
-
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            {car.fuel}
-          </span>
-        </div>
-
-        <p className="mt-3 text-sm text-slate-500">
-          {car.engine} • {car.year}
-        </p>
-
-        <p className="mt-5 text-2xl font-semibold text-slate-950">
-          {formatPrice(car.price)}
-        </p>
-
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <InfoPill label="Câmbio" value={car.transmission} />
-          <InfoPill label="Consumo" value={car.consumption} />
-        </div>
-
-        <Link
-          href={`/carros/${car.id}`}
-          className="mt-6 inline-flex w-full justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-        >
-          Ver detalhes
-        </Link>
-      </div>
-    </article>
-  );
-}
-
-function InfoPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-slate-50 p-3">
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-950">{value}</p>
+      <span className="text-right font-semibold text-slate-800">{value}</span>
     </div>
   );
 }
 
-function CompareRow({ label, values }: { label: string; values: string[] }) {
-  return (
-    <tr>
-      <th className="bg-slate-50 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-        {label}
-      </th>
-
-      {values.map((value, index) => (
-        <td
-          key={`${label}-${index}`}
-          className="px-6 py-4 font-medium text-slate-800"
-        >
-          {value}
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-function VehicleImage({ image, alt }: { image: string; alt: string }) {
+function CarVisual({ image, carName }: { image: string; carName: string }) {
   if (image) {
     return (
-      <img
-        src={image}
-        alt={alt}
-        className="relative z-10 max-h-44 w-full max-w-sm object-contain drop-shadow-xl"
-      />
+      <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white p-5">
+        <div
+          aria-label={carName}
+          className="h-full w-full bg-contain bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${image})`,
+          }}
+        />
+      </div>
     );
   }
 
   return (
-    <svg
-      viewBox="0 0 900 520"
-      className="relative z-10 w-full max-w-sm drop-shadow-xl"
-      fill="none"
-    >
-      <defs>
-        <linearGradient id="compareCarBody" x1="190" y1="170" x2="760" y2="390">
-          <stop stopColor="#ffffff" />
-          <stop offset="0.55" stopColor="#eef3f8" />
-          <stop offset="1" stopColor="#d7e0ea" />
-        </linearGradient>
+    <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white p-5">
+      <svg
+        viewBox="0 0 720 300"
+        className="h-auto w-full max-w-md drop-shadow-[0_20px_20px_rgba(15,23,42,0.10)]"
+      >
+        <ellipse cx="360" cy="250" rx="260" ry="24" fill="#dbeafe" />
 
-        <linearGradient
-          id="compareWindowGradient"
-          x1="330"
-          y1="135"
-          x2="610"
-          y2="255"
-        >
-          <stop stopColor="#dce8f5" />
-          <stop offset="1" stopColor="#8fa7bd" />
-        </linearGradient>
-      </defs>
+        <path
+          d="M115 205h490l-15-55c-9-34-34-60-68-67l-48-10-43-68C416 18 388 10 359 10H274c-32 0-62 15-81 41l-39 53-45 13c-32 9-57 34-66 66l-10 38h82Z"
+          fill="#ffffff"
+          stroke="#cbd5e1"
+          strokeWidth="4"
+        />
 
-      <ellipse
-        cx="475"
-        cy="428"
-        rx="320"
-        ry="28"
-        fill="#cbd5e1"
-        fillOpacity="0.55"
-      />
+        <path
+          d="M235 75h107V22h-58c-25 0-48 12-62 32l-13 21h26Z"
+          fill="#dbeafe"
+          stroke="#cbd5e1"
+          strokeWidth="3"
+        />
 
-      <path
-        d="M171 330C181 285 221 256 267 246L328 176C348 153 377 140 408 140H548C590 140 627 160 650 194L694 259C748 268 787 303 801 353L811 393H159L171 330Z"
-        fill="url(#compareCarBody)"
-        stroke="#cbd5e1"
-        strokeWidth="4"
-      />
+        <path
+          d="M355 22v53h107l-30-43c-11-6-26-10-43-10h-34Z"
+          fill="#dbeafe"
+          stroke="#cbd5e1"
+          strokeWidth="3"
+        />
 
-      <path
-        d="M330 249L383 177C393 164 409 156 426 156H536C572 156 602 174 621 204L650 249H330Z"
-        fill="url(#compareWindowGradient)"
-        stroke="#cbd5e1"
-        strokeWidth="4"
-      />
+        <path d="M45 205h92l24-40H75c-17 0-29 11-34 27l-6 13Z" fill="#0f172a" />
 
-      <path d="M456 158V249" stroke="#ffffff" strokeWidth="5" opacity="0.8" />
-      <path
-        d="M599 184L570 249"
-        stroke="#ffffff"
-        strokeWidth="5"
-        opacity="0.75"
-      />
+        <path
+          d="M500 165h82c19 0 34 14 38 32l3 8H482l8-28c2-7 5-12 10-12Z"
+          fill="#0f172a"
+        />
 
-      <path
-        d="M198 325H302C330 325 354 347 358 375H163L198 325Z"
-        fill="#111827"
-      />
+        <circle cx="160" cy="205" r="52" fill="#0f172a" />
+        <circle cx="160" cy="205" r="32" fill="#334155" />
+        <circle cx="160" cy="205" r="14" fill="#64748b" />
 
-      <path
-        d="M622 325H767L794 375H595C599 348 622 325 622 325Z"
-        fill="#111827"
-      />
+        <circle cx="500" cy="205" r="52" fill="#0f172a" />
+        <circle cx="500" cy="205" r="32" fill="#334155" />
+        <circle cx="500" cy="205" r="14" fill="#64748b" />
 
-      <rect x="223" y="292" width="58" height="20" rx="10" fill="#dbeafe" />
-      <rect x="710" y="314" width="54" height="18" rx="9" fill="#fee2e2" />
+        <rect x="85" y="179" width="55" height="8" rx="4" fill="#e2e8f0" />
+        <rect x="95" y="135" width="44" height="15" rx="7" fill="#bfdbfe" />
+        <rect x="535" y="150" width="44" height="13" rx="7" fill="#fecdd3" />
 
-      <circle cx="306" cy="384" r="66" fill="#111827" />
-      <circle cx="306" cy="384" r="42" fill="#334155" />
-      <circle cx="306" cy="384" r="18" fill="#64748b" />
-
-      <circle cx="666" cy="384" r="66" fill="#111827" />
-      <circle cx="666" cy="384" r="42" fill="#334155" />
-      <circle cx="666" cy="384" r="18" fill="#64748b" />
-    </svg>
+        <path
+          d="M285 130h102M395 142h42"
+          stroke="#94a3b8"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
   );
 }

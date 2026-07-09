@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Header from "../../../components/Header";
 
 export default function AdminLoginPage() {
@@ -12,8 +12,20 @@ export default function AdminLoginPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!email.trim()) {
+      setStatus("error");
+      setErrorMessage("Informe o e-mail de administrador.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setStatus("error");
+      setErrorMessage("Informe a senha de administrador.");
+      return;
+    }
 
     setStatus("loading");
     setErrorMessage("");
@@ -23,6 +35,7 @@ export default function AdminLoginPage() {
       headers: {
         "Content-Type": "application/json",
       },
+      cache: "no-store",
       body: JSON.stringify({
         email: email.trim(),
         password,
@@ -45,10 +58,13 @@ export default function AdminLoginPage() {
     <main className="min-h-screen bg-[#f7faff] text-slate-950">
       <Header />
 
-      <section className="mx-auto flex min-h-[calc(100vh-90px)] max-w-7xl items-center justify-center px-6 py-10 lg:px-8">
+      <section className="mx-auto flex min-h-[calc(100vh-88px)] max-w-7xl items-center justify-center px-6 py-8 lg:px-8 lg:py-10">
         <div className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm lg:grid-cols-[1fr_420px]">
-          <div className="hidden bg-gradient-to-br from-blue-600 to-blue-800 p-10 text-white lg:block">
-            <div className="flex h-full flex-col justify-between">
+          <div className="relative hidden overflow-hidden bg-blue-600 p-10 text-white lg:block">
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10" />
+            <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-blue-400/20" />
+
+            <div className="relative z-10 flex h-full flex-col justify-between">
               <div>
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
                   <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none">
@@ -58,12 +74,14 @@ export default function AdminLoginPage() {
                       strokeWidth="1.8"
                       strokeLinecap="round"
                     />
+
                     <path
                       d="M5 11h14v9H5v-9Z"
                       stroke="currentColor"
                       strokeWidth="1.8"
                       strokeLinejoin="round"
                     />
+
                     <path
                       d="M12 15v2"
                       stroke="currentColor"
@@ -91,27 +109,58 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="p-6 sm:p-10">
-            <p className="text-sm font-semibold text-blue-600">
-              Login do administrador
-            </p>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 lg:hidden">
+              <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none">
+                <path
+                  d="M6 11V8a6 6 0 0 1 12 0v3"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
 
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-              Entrar nos Leads
-            </h2>
+                <path
+                  d="M5 11h14v9H5v-9Z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
 
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Informe o e-mail e a senha de administrador para continuar.
-            </p>
+                <path
+                  d="M12 15v2"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            <div className="mt-6 text-center lg:mt-0 lg:text-left">
+              <p className="text-sm font-semibold text-blue-600">
+                Login do administrador
+              </p>
+
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                Entrar nos Leads
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Informe o e-mail e a senha de administrador para continuar.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-600">
                   E-mail
                   <input
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    type="email"
-                    required
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setStatus("idle");
+                      setErrorMessage("");
+                    }}
+                    type="text"
+                    inputMode="email"
                     placeholder="admin@autostore.com"
                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
@@ -123,9 +172,12 @@ export default function AdminLoginPage() {
                   Senha
                   <input
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setStatus("idle");
+                      setErrorMessage("");
+                    }}
                     type="password"
-                    required
                     placeholder="Digite sua senha"
                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
@@ -140,14 +192,14 @@ export default function AdminLoginPage() {
                 {status === "loading" ? "Entrando..." : "Entrar"}
               </button>
 
-              {status === "error" && (
+              {status === "error" && errorMessage && (
                 <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {errorMessage}
                 </p>
               )}
             </form>
 
-            <p className="mt-6 text-xs leading-5 text-slate-400">
+            <p className="mt-6 text-center text-xs leading-5 text-slate-400 lg:text-left">
               Acesso restrito para visualização dos contatos recebidos.
             </p>
           </div>
