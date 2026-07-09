@@ -1,89 +1,145 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
-function CarLogoIcon() {
-  return (
-    <svg viewBox="0 0 32 32" className="h-8 w-8" fill="none" aria-hidden="true">
-      <rect width="32" height="32" rx="10" fill="#2563eb" />
-
-      <path
-        d="M8 18.2h16M10.2 18.2l1.2-4.1A2.2 2.2 0 0 1 13.5 12.5h5A2.2 2.2 0 0 1 20.6 14.1l1.2 4.1"
-        stroke="white"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path
-        d="M10 18.2v2.4A1.4 1.4 0 0 0 11.4 22h9.2a1.4 1.4 0 0 0 1.4-1.4v-2.4"
-        stroke="white"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <circle cx="12" cy="21.4" r="1.2" fill="white" />
-      <circle cx="20" cy="21.4" r="1.2" fill="white" />
-    </svg>
-  );
-}
+const navItems = [
+  {
+    label: "Catálogo",
+    href: "/catalogo",
+  },
+  {
+    label: "Comparar",
+    href: "/comparar",
+  },
+  {
+    label: "Assistente",
+    href: "/assistente",
+  },
+  {
+    label: "Leads",
+    href: "/leads",
+  },
+];
 
 export default function Header() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-3">
-          <CarLogoIcon />
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-          <span className="text-base font-bold tracking-tight text-slate-950">
-            AutoStore AI
-          </span>
+  return (
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-3"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
+              <path
+                d="M4 15l1.4-4.2A3 3 0 0 1 8.2 8h7.6a3 3 0 0 1 2.8 2.8L20 15M4 15h16v4H4v-4Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+
+              <path
+                d="M7 19v1.5M17 19v1.5M7.5 15h.01M16.5 15h.01"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <p className="text-base font-bold leading-none text-slate-950">
+              AutoStore
+            </p>
+
+            <p className="mt-1 text-xs font-medium text-slate-500">
+              Encontre seu carro ideal
+            </p>
+          </div>
         </Link>
 
-        <nav className="hidden items-center gap-10 text-sm font-medium text-slate-600 md:flex">
-          <Link href="/catalogo" className="transition hover:text-blue-600">
-            Catálogo
-          </Link>
+        <nav className="hidden items-center gap-2 md:flex">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-          <Link href="/comparar" className="transition hover:text-blue-600">
-            Comparar
-          </Link>
-
-          <Link href="/assistente" className="transition hover:text-blue-600">
-            Assistente IA
-          </Link>
-
-          <Link href="/leads" className="transition hover:text-blue-600">
-            Leads
-          </Link>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch={item.href === "/leads" ? false : undefined}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <button
           type="button"
-          aria-label="Área do usuário"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm transition hover:bg-blue-700"
+          onClick={() => setIsMenuOpen((currentValue) => !currentValue)}
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 md:hidden"
+          aria-label="Abrir menu"
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            />
-            <path
-              d="M4.5 20a7.5 7.5 0 0 1 15 0"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-          </svg>
+          {isMenuOpen ? (
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
+              <path
+                d="M5 7h14M5 12h14M5 17h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
         </button>
       </div>
+
+      {isMenuOpen && (
+        <div className="border-t border-slate-100 bg-white px-6 pb-5 pt-2 shadow-sm md:hidden">
+          <nav className="mx-auto flex max-w-7xl flex-col gap-2">
+            {navItems.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  prefetch={item.href === "/leads" ? false : undefined}
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

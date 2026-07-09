@@ -1,4 +1,7 @@
+import { redirect } from "next/navigation";
 import Header from "../../components/Header";
+import AdminLogoutButton from "../../components/AdminLogoutButton";
+import { isAdminAuthenticated } from "../../lib/adminAuth";
 import { prisma } from "../../lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +17,12 @@ function formatDate(date: Date) {
 }
 
 export default async function LeadsPage() {
+  const isAuthenticated = await isAdminAuthenticated();
+
+  if (!isAuthenticated) {
+    redirect("/admin/login");
+  }
+
   const leads = await prisma.lead.findMany({
     include: {
       car: true,
@@ -49,8 +58,12 @@ export default async function LeadsPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-            {totalLeads} contato(s) recebido(s)
+          <div className="flex flex-wrap gap-3">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+              {totalLeads} contato(s) recebido(s)
+            </div>
+
+            <AdminLogoutButton />
           </div>
         </div>
 
