@@ -1,76 +1,133 @@
-import Link from "next/link";
+"use client";
 
-export default function AssistentePage() {
+import { useState } from "react";
+import Header from "../../components/Header";
+
+const suggestions = [
+  "Qual SUV tem melhor consumo?",
+  "Qual carro mais econômico até R$ 100 mil?",
+  "Compare Corolla Cross e T-Cross",
+  "Quais modelos automáticos estão disponíveis?",
+];
+
+type Message = {
+  role: "assistant" | "user";
+  content: string;
+};
+
+export default function AssistantPage() {
+  const [question, setQuestion] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content:
+        "Olá! Sou o assistente da AutoStore. Posso ajudar você a encontrar o carro ideal, comparar modelos e tirar dúvidas sobre os veículos disponíveis.",
+    },
+  ]);
+
+  function handleSend(message?: string) {
+    const text = message || question;
+
+    if (!text.trim()) return;
+
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      {
+        role: "user",
+        content: text,
+      },
+      {
+        role: "assistant",
+        content:
+          "Estou preparando essa resposta com base nos veículos disponíveis no catálogo. Em breve esta conversa estará conectada ao atendimento completo.",
+      },
+    ]);
+
+    setQuestion("");
+  }
+
   return (
-    <main className="min-h-screen bg-[#f6f8fb] px-6 py-10 text-slate-950">
-      <section className="mx-auto max-w-7xl">
-        <Link href="/" className="text-sm font-semibold text-blue-600">
-          ← Voltar para início
-        </Link>
+    <main className="min-h-screen bg-[#f7faff] text-slate-950">
+      <Header />
 
-        <div className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">
-            Assistente IA
-          </p>
+      <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+        <div className="mb-8">
+          <p className="text-sm font-semibold text-blue-600">Assistente</p>
 
-          <h1 className="mt-3 text-5xl font-bold tracking-tight">
-            Chat de IA com RAG
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            Tire suas dúvidas sobre os veículos
           </h1>
 
-          <p className="mt-4 max-w-2xl text-lg text-slate-600">
-            Aqui ficará o assistente que responde perguntas sobre os carros com
-            base nos dados oficiais do desafio.
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+            Pergunte sobre modelos, consumo, câmbio, preço, categoria ou compare
+            opções para escolher com mais segurança.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <p className="text-sm font-semibold text-blue-600">
-                AutoStore AI
-              </p>
-
-              <p className="mt-3 rounded-2xl bg-white p-4 text-slate-700 shadow-sm">
-                Olá! Sou o assistente da AutoStore. Em breve vou responder com
-                base no catálogo oficial usando RAG.
-              </p>
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="min-h-[430px] rounded-3xl bg-slate-50 p-5">
+              <div className="space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={`flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                        message.role === "user"
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-200 bg-white text-slate-700"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSend();
+              }}
+              className="mt-5 flex gap-3"
+            >
               <input
-                disabled
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
                 placeholder="Digite sua pergunta..."
-                className="w-full rounded-full border border-slate-200 bg-slate-50 px-5 py-4 text-slate-500 outline-none"
+                className="min-h-14 flex-1 rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-blue-400"
               />
 
               <button
-                disabled
-                className="rounded-full bg-blue-600 px-6 py-4 font-semibold text-white opacity-70"
+                type="submit"
+                className="rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
               >
                 Enviar
               </button>
-            </div>
-          </div>
+            </form>
+          </section>
 
-          <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold">Perguntas de teste</h2>
+          <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-950">
+              Sugestões de perguntas
+            </h2>
 
             <div className="mt-5 space-y-3">
-              <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Quais cores e qual o consumo do Corolla Cross?
-              </p>
-
-              <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Compare o Onix e o HB20 para uso urbano.
-              </p>
-
-              <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Qual carro tem o menor preço inicial?
-              </p>
-
-              <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-                Vocês vendem motos?
-              </p>
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => handleSend(suggestion)}
+                  className="w-full rounded-2xl bg-slate-50 px-4 py-4 text-left text-sm leading-5 text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
           </aside>
         </div>
