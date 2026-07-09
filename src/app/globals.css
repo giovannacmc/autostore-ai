@@ -212,3 +212,52 @@ body {
 .dark .shadow-xl {
   box-shadow: 0 18px 40px rgb(0 0 0 / 0.22);
 }
+
+.dark main.bg-\[\#f8fbff\] {
+  background-color: #0f172a;
+}
+
+.dark .bg-white {
+  background-color: #111827;
+}
+
+.dark .text-slate-950 {
+  color: #f8fafc;
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1;
+}
+
+.dark .border-slate-200 {
+  border-color: #334155;
+}
+
+.dark .bg-slate-50 {
+  background-color: #1e293b;
+}
+
+.dark .from-slate-50 {
+  --tw-gradient-from: #1e293b var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(30 41 59 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .via-blue-50 {
+  --tw-gradient-to: rgb(30 58 138 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops:
+    var(--tw-gradient-from),
+    rgb(30 58 138 / 0.35) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+
+.dark .to-white {
+  --tw-gradient-to: #111827 var(--tw-gradient-to-position);
+}
+
+.dark .bg-blue-50 {
+  background-color: #172554;
+}
+
+.dark .text-blue-700 {
+  color: #93c5fd;
+}
