@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
+import {
+  formatWhatsapp,
+  isValidEmail,
+  isValidWhatsapp,
+} from "../../../lib/leadValidation";
 
 export async function GET() {
   try {
@@ -27,10 +32,22 @@ export async function POST(request: Request) {
 
     const { name, email, phone, message, carId } = body;
 
-    if (!name || (!email && !phone)) {
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return NextResponse.json({ error: "Informe seu nome." }, { status: 400 });
+    }
+
+    if (!email || typeof email !== "string" || !isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "Informe um e-mail válido." },
+        { status: 400 },
+      );
+    }
+
+    if (!phone || typeof phone !== "string" || !isValidWhatsapp(phone)) {
       return NextResponse.json(
         {
-          error: "Informe nome e pelo menos um contato: e-mail ou telefone.",
+          error:
+            "Informe um WhatsApp válido com DDD do Brasil. Exemplo: (11) 99999-9999.",
         },
         { status: 400 },
       );
@@ -38,11 +55,11 @@ export async function POST(request: Request) {
 
     const lead = await prisma.lead.create({
       data: {
-        name,
-        email,
-        phone,
-        message,
-        carId,
+        name: name.trim(),
+        email: email.trim(),
+        phone: formatWhatsapp(phone),
+        message: typeof message === "string" ? message.trim() : "",
+        carId: typeof carId === "string" ? carId : undefined,
       },
     });
 
