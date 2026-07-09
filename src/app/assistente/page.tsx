@@ -4,10 +4,10 @@ import { useState } from "react";
 import Header from "../../components/Header";
 
 const suggestions = [
-  "Qual SUV tem melhor consumo?",
-  "Qual carro mais econômico até R$ 100 mil?",
-  "Compare Corolla Cross e T-Cross",
   "Quais modelos automáticos estão disponíveis?",
+  "Tem algum carro até 100 mil?",
+  "Quais SUVs vocês têm?",
+  "Compare Corolla Cross e T-Cross",
 ];
 
 type Message = {
@@ -17,6 +17,7 @@ type Message = {
 
 export default function AssistantPage() {
   const [question, setQuestion] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -25,25 +26,56 @@ export default function AssistantPage() {
     },
   ]);
 
-  function handleSend(message?: string) {
+  async function handleSend(message?: string) {
     const text = message || question;
 
-    if (!text.trim()) return;
+    if (!text.trim() || isLoading) return;
 
-    setMessages((currentMessages) => [
-      ...currentMessages,
-      {
-        role: "user",
-        content: text,
-      },
-      {
-        role: "assistant",
-        content:
-          "Estou preparando essa resposta com base nos veículos disponíveis no catálogo. Em breve esta conversa estará conectada ao atendimento completo.",
-      },
-    ]);
+    const userMessage: Message = {
+      role: "user",
+      content: text,
+    };
 
+    setMessages((currentMessages) => [...currentMessages, userMessage]);
     setQuestion("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: text,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao responder.");
+      }
+
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          role: "assistant",
+          content: data.answer,
+        },
+      ]);
+    } catch {
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          role: "assistant",
+          content:
+            "Não consegui responder agora. Tente novamente em alguns instantes.",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -76,7 +108,7 @@ export default function AssistantPage() {
                     }`}
                   >
                     <div
-                      className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                      className={`max-w-[78%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
                         message.role === "user"
                           ? "bg-blue-600 text-white"
                           : "border border-slate-200 bg-white text-slate-700"
@@ -86,6 +118,14 @@ export default function AssistantPage() {
                     </div>
                   </div>
                 ))}
+
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm">
+                      Digitando resposta...
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -105,9 +145,10 @@ export default function AssistantPage() {
 
               <button
                 type="submit"
-                className="rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                disabled={isLoading}
+                className="rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Enviar
+                {isLoading ? "Enviando..." : "Enviar"}
               </button>
             </form>
           </section>
@@ -123,7 +164,8 @@ export default function AssistantPage() {
                   key={suggestion}
                   type="button"
                   onClick={() => handleSend(suggestion)}
-                  className="w-full rounded-2xl bg-slate-50 px-4 py-4 text-left text-sm leading-5 text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                  disabled={isLoading}
+                  className="w-full rounded-2xl bg-slate-50 px-4 py-4 text-left text-sm leading-5 text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {suggestion}
                 </button>
