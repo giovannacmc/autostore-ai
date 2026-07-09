@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Car {
+  id           String   @id
+  brand        String
+  model        String
+  category     String
+  year         Int
+  engine       String
+  power        String
+  transmission String
+  consumption  String
+  price        Int
+  fuel         String
+  colors       String[]
+  items        String[]
+  description  String
+  image        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leads Lead[]
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  message   String?
+  carId     String?
+  car       Car?     @relation(fields: [carId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model RagChunk {
+  id        String   @id @default(cuid())
+  carId     String?
+  title     String
+  content   String
+  embedding Json
+  createdAt DateTime @default(now())
+}
