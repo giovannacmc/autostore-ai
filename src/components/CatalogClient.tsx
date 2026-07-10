@@ -17,11 +17,16 @@ function formatPrice(price: number) {
 }
 
 export default function CatalogClient({ cars }: CatalogClientProps) {
+  const prices = cars.map((car) => car.price);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+
   const [search, setSearch] = useState("");
   const [brand, setBrand] = useState("Todos");
   const [category, setCategory] = useState("Todos");
   const [fuel, setFuel] = useState("Todos");
   const [transmission, setTransmission] = useState("Todos");
+  const [priceLimit, setPriceLimit] = useState(maxPrice);
 
   const brands = useMemo(
     () => ["Todos", ...Array.from(new Set(cars.map((car) => car.brand)))],
@@ -49,15 +54,16 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
-    const matchesSearch = searchText.includes(normalizedSearch);
-    const matchesBrand = brand === "Todos" || car.brand === brand;
-    const matchesCategory = category === "Todos" || car.category === category;
-    const matchesFuel = fuel === "Todos" || car.fuel === fuel;
-
     const normalizedTransmission = car.transmission
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
+
+    const matchesSearch = searchText.includes(normalizedSearch);
+    const matchesBrand = brand === "Todos" || car.brand === brand;
+    const matchesCategory = category === "Todos" || car.category === category;
+    const matchesFuel = fuel === "Todos" || car.fuel === fuel;
+    const matchesPrice = car.price <= priceLimit;
 
     const matchesTransmission =
       transmission === "Todos" ||
@@ -70,13 +76,26 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
       matchesBrand &&
       matchesCategory &&
       matchesFuel &&
-      matchesTransmission
+      matchesTransmission &&
+      matchesPrice
     );
   });
 
-  const cheapestCar = cars.reduce((cheapest, currentCar) => {
-    return currentCar.price < cheapest.price ? currentCar : cheapest;
-  }, cars[0]);
+  const cheapestCar =
+    cars.length > 0
+      ? cars.reduce((cheapest, currentCar) => {
+          return currentCar.price < cheapest.price ? currentCar : cheapest;
+        }, cars[0])
+      : null;
+
+  function clearFilters() {
+    setSearch("");
+    setBrand("Todos");
+    setCategory("Todos");
+    setFuel("Todos");
+    setTransmission("Todos");
+    setPriceLimit(maxPrice);
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-10">
@@ -89,8 +108,8 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Filtre por marca, categoria, combustível e câmbio para encontrar o
-            modelo que combina com você.
+            Filtre por marca, categoria, combustível, câmbio e preço para
+            encontrar o modelo que combina com você.
           </p>
         </div>
 
@@ -128,13 +147,7 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
 
             <button
               type="button"
-              onClick={() => {
-                setSearch("");
-                setBrand("Todos");
-                setCategory("Todos");
-                setFuel("Todos");
-                setTransmission("Todos");
-              }}
+              onClick={clearFilters}
               className="rounded-full bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
             >
               Limpar
@@ -176,6 +189,13 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
               onChange={setTransmission}
               options={["Todos", "Automático", "Manual"]}
             />
+
+            <PriceRangeFilter
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              priceLimit={priceLimit}
+              onChange={setPriceLimit}
+            />
           </div>
         </aside>
 
@@ -192,7 +212,7 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
             </div>
 
             <span className="w-fit rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700">
-              Catálogo atualizado
+              Até {formatPrice(priceLimit)}
             </span>
           </div>
 
@@ -227,7 +247,8 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Tente alterar os filtros ou limpar a busca para ver mais opções.
+                Tente alterar os filtros, aumentar o preço máximo ou limpar a
+                busca para ver mais opções.
               </p>
             </div>
           )}
@@ -289,5 +310,50 @@ function FilterSelect({
         ))}
       </select>
     </label>
+  );
+}
+
+function PriceRangeFilter({
+  minPrice,
+  maxPrice,
+  priceLimit,
+  onChange,
+}: {
+  minPrice: number;
+  maxPrice: number;
+  priceLimit: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold text-slate-600">Preço máximo</p>
+
+          <p className="mt-1 text-lg font-semibold text-slate-950">
+            {formatPrice(priceLimit)}
+          </p>
+        </div>
+
+        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          Arraste
+        </span>
+      </div>
+
+      <input
+        type="range"
+        min={minPrice}
+        max={maxPrice}
+        step={5000}
+        value={priceLimit}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="h-2 w-full cursor-pointer accent-blue-600"
+      />
+
+      <div className="mt-3 flex items-center justify-between text-xs font-medium text-slate-500">
+        <span>{formatPrice(minPrice)}</span>
+        <span>{formatPrice(maxPrice)}</span>
+      </div>
+    </div>
   );
 }

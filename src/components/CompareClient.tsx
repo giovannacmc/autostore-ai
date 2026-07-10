@@ -16,112 +16,119 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
+const comparisonRows = [
+  {
+    label: "Marca",
+    getValue: (car: Car) => car.brand,
+  },
+  {
+    label: "Modelo",
+    getValue: (car: Car) => car.model,
+  },
+  {
+    label: "Categoria",
+    getValue: (car: Car) => car.category,
+  },
+  {
+    label: "Ano",
+    getValue: (car: Car) => car.year,
+  },
+  {
+    label: "Motor",
+    getValue: (car: Car) => car.engine,
+  },
+  {
+    label: "Potência",
+    getValue: (car: Car) => car.power,
+  },
+  {
+    label: "Câmbio",
+    getValue: (car: Car) => car.transmission,
+  },
+  {
+    label: "Combustível",
+    getValue: (car: Car) => car.fuel,
+  },
+  {
+    label: "Consumo",
+    getValue: (car: Car) => car.consumption,
+  },
+  {
+    label: "Preço",
+    getValue: (car: Car) => formatPrice(car.price),
+  },
+];
+
 export default function CompareClient({ cars }: CompareClientProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([
-    cars[0]?.id || "",
-    cars[1]?.id || "",
-    cars[2]?.id || "",
+  const [selectedCarIds, setSelectedCarIds] = useState<string[]>(() => [
+    cars[0]?.id ?? "",
+    cars[1]?.id ?? "",
+    cars[2]?.id ?? "",
   ]);
 
   const selectedCars = useMemo(() => {
-    return selectedIds
-      .map((id) => cars.find((car) => car.id === id))
-      .filter(Boolean) as Car[];
-  }, [cars, selectedIds]);
+    return selectedCarIds.map((carId) => {
+      return cars.find((car) => car.id === carId) || null;
+    });
+  }, [cars, selectedCarIds]);
 
-  function updateSelectedCar(index: number, carId: string) {
-    setSelectedIds((currentIds) => {
-      const nextIds = [...currentIds];
-      nextIds[index] = carId;
-      return nextIds;
+  const selectedCount = selectedCars.filter(Boolean).length;
+
+  function handleSelectCar(index: number, carId: string) {
+    setSelectedCarIds((currentIds) => {
+      const isRepeated =
+        carId !== "" &&
+        currentIds.some((selectedId, selectedIndex) => {
+          return selectedIndex !== index && selectedId === carId;
+        });
+
+      if (isRepeated) {
+        return currentIds;
+      }
+
+      const updatedIds = [...currentIds];
+      updatedIds[index] = carId;
+
+      return updatedIds;
     });
   }
 
-  const rows = [
-    {
-      label: "Preço",
-      getValue: (car: Car) => formatPrice(car.price),
-    },
-    {
-      label: "Categoria",
-      getValue: (car: Car) => car.category,
-    },
-    {
-      label: "Ano",
-      getValue: (car: Car) => String(car.year),
-    },
-    {
-      label: "Motor",
-      getValue: (car: Car) => car.engine,
-    },
-    {
-      label: "Potência",
-      getValue: (car: Car) => car.power,
-    },
-    {
-      label: "Câmbio",
-      getValue: (car: Car) => car.transmission,
-    },
-    {
-      label: "Consumo",
-      getValue: (car: Car) => car.consumption,
-    },
-    {
-      label: "Combustível",
-      getValue: (car: Car) => car.fuel,
-    },
-    {
-      label: "Cores",
-      getValue: (car: Car) => car.colors.join(", "),
-    },
-    {
-      label: "Itens principais",
-      getValue: (car: Car) => car.items.slice(0, 3).join(", "),
-    },
-  ];
+  function isCarAlreadySelected(carId: string, currentIndex: number) {
+    return selectedCarIds.some((selectedId, index) => {
+      return index !== currentIndex && selectedId === carId;
+    });
+  }
 
-  if (cars.length === 0) {
-    return (
-      <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-950">
-            Nenhum veículo disponível
-          </h1>
-
-          <p className="mt-3 text-sm text-slate-600">
-            Quando houver veículos cadastrados, eles aparecerão aqui para
-            comparação.
-          </p>
-        </div>
-      </section>
-    );
+  function clearComparison() {
+    setSelectedCarIds(["", "", ""]);
   }
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-10">
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
-          <p className="text-sm font-semibold text-blue-600">Comparação</p>
+          <p className="text-sm font-semibold text-blue-600">Comparar</p>
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
             Compare veículos lado a lado
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-            Escolha até três modelos para analisar preço, motor, câmbio,
-            consumo, combustível e itens principais.
+            Selecione até três modelos diferentes para analisar preço,
+            categoria, câmbio, consumo e principais características.
           </p>
         </div>
 
-        <Link
-          href="/catalogo"
-          className="w-fit rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        <button
+          type="button"
+          onClick={clearComparison}
+          className="w-fit rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
         >
-          Voltar ao catálogo
-        </Link>
+          Limpar comparação
+        </button>
       </div>
 
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         {[0, 1, 2].map((index) => (
           <label
             key={index}
@@ -132,195 +139,171 @@ export default function CompareClient({ cars }: CompareClientProps) {
             </span>
 
             <select
-              value={selectedIds[index]}
-              onChange={(event) => updateSelectedCar(index, event.target.value)}
-              className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400"
+              value={selectedCarIds[index]}
+              onChange={(event) => handleSelectCar(index, event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-400"
             >
-              {cars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.brand} {car.model}
-                </option>
-              ))}
+              <option value="">Selecione um veículo</option>
+
+              {cars.map((car) => {
+                const alreadySelected = isCarAlreadySelected(car.id, index);
+
+                return (
+                  <option
+                    key={car.id}
+                    value={car.id}
+                    disabled={alreadySelected}
+                  >
+                    {car.brand} {car.model}
+                    {alreadySelected ? " — já selecionado" : ""}
+                  </option>
+                );
+              })}
             </select>
+
+            <CompareVehicleCard car={selectedCars[index]} />
           </label>
         ))}
       </div>
 
-      <div className="mb-6 grid gap-5 lg:grid-cols-3">
-        {selectedCars.map((car) => (
-          <article
-            key={car.id}
-            className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
-          >
-            <CarVisual
-              image={car.image}
-              carName={`${car.brand} ${car.model}`}
-            />
+      {selectedCount > 0 ? (
+        <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 p-5">
+            <p className="text-lg font-semibold text-slate-950">
+              Resultado da comparação
+            </p>
 
-            <div className="p-5">
-              <p className="text-sm font-semibold text-blue-600">{car.brand}</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Os modelos repetidos ficam bloqueados para evitar uma comparação
+              duplicada.
+            </p>
+          </div>
 
-              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                {car.model}
-              </h2>
-
-              <p className="mt-2 text-sm text-slate-500">
-                {car.category} • {car.year}
-              </p>
-
-              <p className="mt-5 text-2xl font-bold text-slate-950">
-                {formatPrice(car.price)}
-              </p>
-
-              <div className="mt-5 grid gap-3 text-sm text-slate-600">
-                <InfoLine label="Motor" value={car.engine} />
-                <InfoLine label="Câmbio" value={car.transmission} />
-                <InfoLine label="Consumo" value={car.consumption} />
-              </div>
-
-              <Link
-                href={`/carros/${car.id}`}
-                className="mt-5 block rounded-2xl bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                Ver detalhes
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <h2 className="text-lg font-semibold text-slate-950">
-            Comparativo completo
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-600">
-            No celular, deslize a tabela para o lado para ver todos os veículos.
-          </p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="w-[190px] px-6 py-4">Critério</th>
-
-                {selectedCars.map((car) => (
-                  <th key={car.id} className="px-6 py-4">
-                    {car.brand} {car.model}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="border-b border-slate-200 px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Item
                   </th>
-                ))}
-              </tr>
-            </thead>
 
-            <tbody className="divide-y divide-slate-100">
-              {rows.map((row) => (
-                <tr key={row.label} className="transition hover:bg-slate-50/80">
-                  <td className="px-6 py-5 font-semibold text-slate-900">
-                    {row.label}
-                  </td>
-
-                  {selectedCars.map((car) => (
-                    <td
-                      key={`${row.label}-${car.id}`}
-                      className="px-6 py-5 text-slate-600"
+                  {[0, 1, 2].map((index) => (
+                    <th
+                      key={index}
+                      className="border-b border-slate-200 px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-400"
                     >
-                      {row.getValue(car)}
-                    </td>
+                      Veículo {index + 1}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {comparisonRows.map((row) => (
+                  <tr key={row.label} className="border-b border-slate-100">
+                    <td className="px-5 py-4 text-sm font-semibold text-slate-950">
+                      {row.label}
+                    </td>
+
+                    {selectedCars.map((car, index) => (
+                      <td
+                        key={`${row.label}-${index}`}
+                        className="px-5 py-4 text-sm text-slate-600"
+                      >
+                        {car ? row.getValue(car) : "-"}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </section>
+      ) : (
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-950">
+            Nenhum veículo selecionado
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-600">
+            Escolha pelo menos um modelo para iniciar a comparação.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
 
-function InfoLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {label}
-      </span>
-
-      <span className="text-right font-semibold text-slate-800">{value}</span>
-    </div>
-  );
-}
-
-function CarVisual({ image, carName }: { image: string; carName: string }) {
-  if (image) {
+function CompareVehicleCard({ car }: { car: Car | null }) {
+  if (!car) {
     return (
-      <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white p-5">
-        <div
-          aria-label={carName}
-          className="h-full w-full bg-contain bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${image})`,
-          }}
-        />
+      <div className="mt-5 flex min-h-[360px] items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+        <div>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
+              <path
+                d="M8 7h11M8 17h11M5 7h.01M5 17h.01M12 12h7M9 12h.01"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          <p className="mt-4 text-sm font-semibold text-slate-950">
+            Selecione um veículo
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            O resumo do modelo aparecerá aqui.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-white p-5">
-      <svg
-        viewBox="0 0 720 300"
-        className="h-auto w-full max-w-md drop-shadow-[0_20px_20px_rgba(15,23,42,0.10)]"
-      >
-        <ellipse cx="360" cy="250" rx="260" ry="24" fill="#dbeafe" />
-
-        <path
-          d="M115 205h490l-15-55c-9-34-34-60-68-67l-48-10-43-68C416 18 388 10 359 10H274c-32 0-62 15-81 41l-39 53-45 13c-32 9-57 34-66 66l-10 38h82Z"
-          fill="#ffffff"
-          stroke="#cbd5e1"
-          strokeWidth="4"
+    <div className="mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+      <div className="flex h-52 items-center justify-center bg-white p-4">
+        <img
+          src={car.image}
+          alt={`${car.brand} ${car.model}`}
+          className="h-full w-full object-contain"
         />
+      </div>
 
-        <path
-          d="M235 75h107V22h-58c-25 0-48 12-62 32l-13 21h26Z"
-          fill="#dbeafe"
-          stroke="#cbd5e1"
-          strokeWidth="3"
-        />
+      <div className="p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-blue-600">{car.brand}</p>
 
-        <path
-          d="M355 22v53h107l-30-43c-11-6-26-10-43-10h-34Z"
-          fill="#dbeafe"
-          stroke="#cbd5e1"
-          strokeWidth="3"
-        />
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            {car.fuel}
+          </span>
+        </div>
 
-        <path d="M45 205h92l24-40H75c-17 0-29 11-34 27l-6 13Z" fill="#0f172a" />
+        <h2 className="text-xl font-semibold text-slate-950">{car.model}</h2>
 
-        <path
-          d="M500 165h82c19 0 34 14 38 32l3 8H482l8-28c2-7 5-12 10-12Z"
-          fill="#0f172a"
-        />
+        <p className="mt-3 text-sm text-slate-500">
+          {car.category} • {car.year}
+        </p>
 
-        <circle cx="160" cy="205" r="52" fill="#0f172a" />
-        <circle cx="160" cy="205" r="32" fill="#334155" />
-        <circle cx="160" cy="205" r="14" fill="#64748b" />
+        <div className="mt-4 space-y-2 text-sm text-slate-600">
+          <p>{car.engine}</p>
+          <p>{car.transmission}</p>
+          <p>{car.consumption}</p>
+        </div>
 
-        <circle cx="500" cy="205" r="52" fill="#0f172a" />
-        <circle cx="500" cy="205" r="32" fill="#334155" />
-        <circle cx="500" cy="205" r="14" fill="#64748b" />
+        <p className="mt-5 text-2xl font-bold text-slate-950">
+          {formatPrice(car.price)}
+        </p>
 
-        <rect x="85" y="179" width="55" height="8" rx="4" fill="#e2e8f0" />
-        <rect x="95" y="135" width="44" height="15" rx="7" fill="#bfdbfe" />
-        <rect x="535" y="150" width="44" height="13" rx="7" fill="#fecdd3" />
-
-        <path
-          d="M285 130h102M395 142h42"
-          stroke="#94a3b8"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      </svg>
+        <Link
+          href={`/carros/${car.id}`}
+          className="mt-5 block rounded-xl bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
+        >
+          Ver detalhes
+        </Link>
+      </div>
     </div>
   );
 }

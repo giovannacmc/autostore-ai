@@ -153,15 +153,15 @@ export default function AdminLoginPage() {
                 <label className="text-xs font-semibold text-slate-600">
                   E-mail
                   <input
+                    type="email"
                     value={email}
                     onChange={(event) => {
                       setEmail(event.target.value);
                       setStatus("idle");
                       setErrorMessage("");
                     }}
-                    type="text"
-                    inputMode="email"
-                    placeholder="admin@autostore.com"
+                    placeholder="Digite o e-mail do administrador"
+                    autoComplete="username"
                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
                 </label>
@@ -171,14 +171,15 @@ export default function AdminLoginPage() {
                 <label className="text-xs font-semibold text-slate-600">
                   Senha
                   <input
+                    type="password"
                     value={password}
                     onChange={(event) => {
                       setPassword(event.target.value);
                       setStatus("idle");
                       setErrorMessage("");
                     }}
-                    type="password"
                     placeholder="Digite sua senha"
+                    autoComplete="current-password"
                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
                 </label>
