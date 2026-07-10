@@ -12,6 +12,26 @@ export default function AdminLoginPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  function getRedirectPath() {
+    if (typeof window === "undefined") {
+      return "/leads";
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const nextPath = params.get("next");
+
+    if (
+      nextPath &&
+      nextPath.startsWith("/") &&
+      !nextPath.startsWith("//") &&
+      !nextPath.includes("://")
+    ) {
+      return nextPath;
+    }
+
+    return "/leads";
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -30,28 +50,33 @@ export default function AdminLoginPage() {
     setStatus("loading");
     setErrorMessage("");
 
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-      body: JSON.stringify({
-        email: email.trim(),
-        password,
-      }),
-    });
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setStatus("error");
+        setErrorMessage(data.error || "Não foi possível entrar.");
+        return;
+      }
+
+      router.replace(getRedirectPath());
+      router.refresh();
+    } catch {
       setStatus("error");
-      setErrorMessage(data.error || "Não foi possível entrar.");
-      return;
+      setErrorMessage("Erro ao tentar entrar. Tente novamente.");
     }
-
-    router.push("/leads");
-    router.refresh();
   }
 
   return (
@@ -140,7 +165,7 @@ export default function AdminLoginPage() {
               </p>
 
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-                Entrar nos Leads
+                Entrar na área administrativa
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -162,7 +187,7 @@ export default function AdminLoginPage() {
                     }}
                     placeholder="Digite o e-mail do administrador"
                     autoComplete="username"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
                 </label>
               </div>
@@ -180,7 +205,7 @@ export default function AdminLoginPage() {
                     }}
                     placeholder="Digite sua senha"
                     autoComplete="current-password"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-400"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-400"
                   />
                 </label>
               </div>

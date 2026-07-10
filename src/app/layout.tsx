@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
+import ThemeProvider from "../components/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AutoStore",
-  description: "Catálogo inteligente de veículos",
+  description: "Encontre seu carro ideal",
 };
-
-const themeScript = `
-(function () {
-  try {
-    var savedTheme = localStorage.getItem("autostore-theme");
-
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  } catch (error) {}
-})();
-`;
 
 export default function RootLayout({
   children,
@@ -28,8 +15,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

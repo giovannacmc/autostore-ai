@@ -8,6 +8,9 @@ type CatalogClientProps = {
   cars: Car[];
 };
 
+const PRICE_MIN = 10000;
+const PRICE_MAX = 500000;
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -17,16 +20,12 @@ function formatPrice(price: number) {
 }
 
 export default function CatalogClient({ cars }: CatalogClientProps) {
-  const prices = cars.map((car) => car.price);
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-
   const [search, setSearch] = useState("");
   const [brand, setBrand] = useState("Todos");
   const [category, setCategory] = useState("Todos");
   const [fuel, setFuel] = useState("Todos");
   const [transmission, setTransmission] = useState("Todos");
-  const [priceLimit, setPriceLimit] = useState(maxPrice);
+  const [priceLimit, setPriceLimit] = useState(PRICE_MAX);
 
   const brands = useMemo(
     () => ["Todos", ...Array.from(new Set(cars.map((car) => car.brand)))],
@@ -94,7 +93,7 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
     setCategory("Todos");
     setFuel("Todos");
     setTransmission("Todos");
-    setPriceLimit(maxPrice);
+    setPriceLimit(PRICE_MAX);
   }
 
   return (
@@ -191,8 +190,8 @@ export default function CatalogClient({ cars }: CatalogClientProps) {
             />
 
             <PriceRangeFilter
-              minPrice={minPrice}
-              maxPrice={maxPrice}
+              minPrice={PRICE_MIN}
+              maxPrice={PRICE_MAX}
               priceLimit={priceLimit}
               onChange={setPriceLimit}
             />
@@ -344,7 +343,7 @@ function PriceRangeFilter({
         type="range"
         min={minPrice}
         max={maxPrice}
-        step={5000}
+        step={10000}
         value={priceLimit}
         onChange={(event) => onChange(Number(event.target.value))}
         className="h-2 w-full cursor-pointer accent-blue-600"

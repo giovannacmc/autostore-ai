@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import Header from "../../components/Header";
 import AdminLogoutButton from "../../components/AdminLogoutButton";
@@ -20,7 +21,7 @@ export default async function LeadsPage() {
   const isAuthenticated = await isAdminAuthenticated();
 
   if (!isAuthenticated) {
-    redirect("/admin/login");
+    redirect("/admin/login?next=/leads");
   }
 
   const leads = await prisma.lead.findMany({
@@ -59,6 +60,13 @@ export default async function LeadsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/carros"
+              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
+            >
+              Gerenciar catálogo
+            </Link>
+
             <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm">
               {totalLeads} contato(s) recebido(s)
             </div>
@@ -273,6 +281,7 @@ function SummaryIcon({
           strokeWidth="1.8"
           strokeLinejoin="round"
         />
+
         <path
           d="M7 18v2M17 18v2M8 14h.01M16 14h.01"
           stroke="currentColor"
@@ -292,12 +301,14 @@ function SummaryIcon({
           strokeWidth="1.8"
           strokeLinecap="round"
         />
+
         <path
           d="M12 17h.01"
           stroke="currentColor"
           strokeWidth="2.4"
           strokeLinecap="round"
         />
+
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
       </svg>
     );
@@ -307,6 +318,7 @@ function SummaryIcon({
     return (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
         <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
+
         <path
           d="M12 8v4l3 2"
           stroke="currentColor"
