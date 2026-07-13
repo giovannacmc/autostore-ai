@@ -3,6 +3,7 @@ import { gemini, GEMINI_EMBEDDING_MODEL } from "./gemini";
 
 export type RetrievedChunk = {
   id: string;
+  carId: string | null;
   title: string;
   content: string;
   score: number;
@@ -47,7 +48,7 @@ Veículo: ${carName}
 Motor: ${car.engine}
 Potência: ${car.power}
 Câmbio: ${car.transmission}
-Consumo: ${car.consumption}
+Consumo ou autonomia: ${car.consumption}
 Cores disponíveis: ${car.colors.join(", ")}
 Itens principais: ${car.items.join(", ")}
       `.trim(),
@@ -67,14 +68,18 @@ export async function generateEmbedding(text: string) {
 
   const values = response.embeddings?.[0]?.values;
 
-  if (!values) {
-    throw new Error("Não foi possível gerar embedding.");
+  if (!values || values.length === 0) {
+    throw new Error("Não foi possível gerar o embedding.");
   }
 
   return values;
 }
 
 function cosineSimilarity(a: number[], b: number[]) {
+  if (a.length !== b.length) {
+    return 0;
+  }
+
   let dotProduct = 0;
   let normA = 0;
   let normB = 0;
@@ -92,31 +97,37 @@ function cosineSimilarity(a: number[], b: number[]) {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-export async function retrieveRelevantChunks(question: string, limit = 5) {
+export async function retrieveRelevantChunks(
+  question: string,
+  limit = 5,
+): Promise<RetrievedChunk[]> {
   const questionEmbedding = await generateEmbedding(question);
 
   const chunks = await prisma.ragChunk.findMany({
     select: {
       id: true,
+      carId: true,
       title: true,
       content: true,
       embedding: true,
     },
   });
 
-  const scoredChunks = chunks
+  return chunks
     .map((chunk) => {
-      const embedding = chunk.embedding as number[];
+      const embedding = Array.isArray(chunk.embedding)
+        ? (chunk.embedding as number[])
+        : [];
 
       return {
         id: chunk.id,
+        carId: chunk.carId,
         title: chunk.title,
         content: chunk.content,
         score: cosineSimilarity(questionEmbedding, embedding),
       };
     })
+    .filter((chunk) => chunk.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
-
-  return scoredChunks;
 }

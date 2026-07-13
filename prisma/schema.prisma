@@ -49,3 +49,15 @@ model RagChunk {
   embedding Json
   createdAt DateTime @default(now())
 }
+
+model AssistantRateLimit {
+  id           String   @id @default(cuid())
+  identifier   String
+  windowStart  DateTime
+  requestCount Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([identifier, windowStart])
+  @@index([windowStart])
+}
